@@ -1,144 +1,211 @@
 """
-models.py - Raw SQL schema and database connection for Tales of Time.
+seed.py - Populates Tales of Time database with lookup and sample transactional data.
+Run after database creation: python database/seed.py
 
-Replaces SQLAlchemy ORM entirely. Responsibilities:
-  - Define the database connection factory
-  - Define and create all 13 tables via raw DDL SQL
-  - Provide a single get_db() function consumed by repositories
+seed.py - This fills the tales of time database with lookup and sample transactional data.
+----------------
+Run after database creation: python database/seed.py
 """
 
-import sqlite3
+import sys
 import os
+from datetime import datetime
 
-# — Connection ————————————————————————————————————————————————————————————
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-_HERE   = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.normpath(os.environ.get("DATABASE_PATH", os.path.join(_HERE, "..", "instance", "tales_of_time.db")))
+from models.models import get_db, init_db
 
-
-def get_db() -> sqlite3.Connection:
-    """
-    Return a new SQLite connection with row_factory set so that
-    all query results behave like dicts (row["ColumnName"]).
-
-    Callers are responsible for closing the connection, or using
-    it as a context manager (with get_db() as conn: ...).
-
-    Foreign key enforcement is enabled on every connection -
-    SQLite disables this by default.
-    """
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
-
-# — Schema DDL ————————————————————————————————————————————————————————————
-
-# Each CREATE TABLE statement mirrors the specification exactly.
-# IF NOT EXISTS means this is safe to call on every app start.
-
-_SCHEMA = """
-
--- — Lookup / Reference tables ————————————————————————————————————————————
-
-CREATE TABLE IF NOT EXISTS CharacterClass (
-    ClassID     INTEGER PRIMARY KEY AUTOINCREMENT,
-    ClassName   VARCHAR(50)  NOT NULL UNIQUE,
-    Description TEXT
-);
-
-CREATE TABLE IF NOT EXISTS Species (
-    SpeciesID   INTEGER PRIMARY KEY AUTOINCREMENT,
-    SpeciesName VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS Alignment (
-    AlignmentID   INTEGER PRIMARY KEY AUTOINCREMENT,
-    AlignmentName VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS ItemType (
-    ItemTypeID INTEGER PRIMARY KEY AUTOINCREMENT,
-    TypeName   VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS Rarity (
-    RarityID   INTEGER PRIMARY KEY AUTOINCREMENT,
-    RarityName VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS Region (
-    RegionID   INTEGER PRIMARY KEY AUTOINCREMENT,
-    RegionName VARCHAR(100) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS Difficulty (
-    DifficultyID   INTEGER PRIMARY KEY AUTOINCREMENT,
-    DifficultyName VARCHAR(50) NOT NULL UNIQUE
-);
-
--- — Core entities ————————————————————————————————————————————————————————
-
-CREATE TABLE IF NOT EXISTS Character (
-    CharacterID   INTEGER PRIMARY KEY AUTOINCREMENT,
-    CharacterName VARCHAR(100) NOT NULL,
-    ClassID       INTEGER NOT NULL,
-    SpeciesID     INTEGER NOT NULL,
-    AlignmentID   INTEGER NOT NULL,
-    Level         INTEGER NOT NULL DEFAULT 1,
-    FOREIGN KEY (ClassID)     REFERENCES CharacterClass(ClassID),
-    FOREIGN KEY (SpeciesID)   REFERENCES Species(SpeciesID),
-    FOREIGN KEY (AlignmentID) REFERENCES Alignment(AlignmentID)
-);
-
-CREATE TABLE IF NOT EXISTS Item (
-    ItemID     INTEGER PRIMARY KEY AUTOINCREMENT,
-    ItemName   VARCHAR(100) NOT NULL,
-    ItemTypeID INTEGER NOT NULL,
-    RarityID   INTEGER NOT NULL,
-    FOREIGN KEY (ItemTypeID) REFERENCES ItemType(ItemTypeID),
-    FOREIGN KEY (RarityID)   REFERENCES Rarity(RarityID)
-);
-
-CREATE TABLE IF NOT EXISTS Quest (
-    QuestID      INTEGER PRIMARY KEY AUTOINCREMENT,
-    QuestName    VARCHAR(100) NOT NULL,
-    RegionID     INTEGER NOT NULL,
-    DifficultyID INTEGER NOT NULL,
-    FOREIGN KEY (RegionID)     REFERENCES Region(RegionID),
-    FOREIGN KEY (DifficultyID) REFERENCES Difficulty(DifficultyID)
-);
-
--- — Join tables ——————————————————————————————————————————————————————————
-
-CREATE TABLE IF NOT EXISTS Inventory (
-    InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
-    CharacterID INTEGER NOT NULL,
-    ItemID      INTEGER NOT NULL,
-    Quantity    INTEGER NOT NULL DEFAULT 1,
-    FOREIGN KEY (CharacterID) REFERENCES Character(CharacterID),
-    FOREIGN KEY (ItemID)      REFERENCES Item(ItemID)
-);
-
-CREATE TABLE IF NOT EXISTS CharacterQuest (
-    CharacterQuestID INTEGER PRIMARY KEY AUTOINCREMENT,
-    CharacterID      INTEGER  NOT NULL,
-    QuestID          INTEGER  NOT NULL,
-    CompletionDate   DATETIME,
-    FOREIGN KEY (CharacterID) REFERENCES Character(CharacterID),
-    FOREIGN KEY (QuestID)     REFERENCES Quest(QuestID)
-);
-
-"""
+LOOKUP_SEED_DATA = {
+    "CharacterClass": [
+        {"ClassName": "Warrior", "Description": "A powerful melee fighter."},
+        {"ClassName": "Mage", "Description": "A master of arcane magic."},
+        {"ClassName": "Rogue", "Description": "A stealthy and cunning operative."},
+        {"ClassName": "Paladin", "Description": "A holy warrior of righteousness."},
+        {"ClassName": "Ranger", "Description": "A skilled hunter of the wilds."},
+        {"ClassName": "Necromancer",  "Description": "A master of death magic."},
+    ],
+    "Species": [
+        {"SpeciesName": "Human"},
+        {"SpeciesName": "Dwarf"},
+        {"SpeciesName": "Elf"},
+        {"SpeciesName": "Orc"},
+        {"SpeciesName": "Halfling"},
+    ],
+    "Alignment": [
+        {"AlignmentName": "Lawful Good"},
+        {"AlignmentName": "Neutral Good"},
+        {"AlignmentName": "Chaotic Good"},
+        {"AlignmentName": "Lawful Neutral"},
+        {"AlignmentName": "True Neutral"},
+        {"AlignmentName": "Chaotic Neutral"},
+        {"AlignmentName": "Lawful Evil"},
+        {"AlignmentName": "Neutral Evil"},
+        {"AlignmentName": "Chaotic Evil"},
+    ],
+    "ItemType": [
+        {"TypeName": "Weapon"},
+        {"TypeName": "Armour"},
+        {"TypeName": "Potion"},
+        {"TypeName": "Accessory"},
+        {"TypeName": "Quest Item"},
+    ],
+    "Rarity": [
+        {"RarityName": "Common"},
+        {"RarityName": "Uncommon"},
+        {"RarityName": "Rare"},
+        {"RarityName": "Epic"},
+        {"RarityName": "Legendary"},
+    ],
+    "Region": [
+        {"RegionName": "The Verdant Vale"},
+        {"RegionName": "Shadowfen Marshes"},
+        {"RegionName": "Ironpeak Mountains"},
+        {"RegionName": "The Ashen Wastes"},
+        {"RegionName": "Crystalspire Forest"},
+    ],
+    "Difficulty": [
+        {"DifficultyName": "Novice"},
+        {"DifficultyName": "Journeyman"},
+        {"DifficultyName": "Adept"},
+        {"DifficultyName": "Expert"},
+        {"DifficultyName": "Legendary"},
+    ],
+}
 
 
-def init_db() -> None:
-    """
-    Execute the schema DDL against the database.
-    Safe to call on every startup - all statements use IF NOT EXISTS.
-    Called by the Flask app factory instead of db.create_all().
-    """
-    with get_db() as conn:
-        conn.executescript(_SCHEMA)
+def seed_lookup_tables(conn):
+    for table, rows in LOOKUP_SEED_DATA.items():
+        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        if count == 0:
+            for row in rows:
+                cols = ", ".join(row.keys())
+                placeholders = ", ".join(["?"] * len(row))
+                conn.execute(
+                    f"INSERT INTO {table} ({cols}) VALUES ({placeholders})",
+                    list(row.values())
+                )
+            print(f"  \u2713 Seeded {table}")
+        else:
+            print(f"  \u23ed Skipped {table} (already has data)")
+    conn.commit()
+
+
+def seed_core_data(conn):
+    # - Lookup helpers -
+    classes      = {r["ClassName"]:      r["ClassID"]      for r in conn.execute("SELECT ClassID, ClassName FROM CharacterClass").fetchall()}
+    species      = {r["SpeciesName"]:    r["SpeciesID"]    for r in conn.execute("SELECT SpeciesID, SpeciesName FROM Species").fetchall()}
+    alignments   = {r["AlignmentName"]:  r["AlignmentID"]  for r in conn.execute("SELECT AlignmentID, AlignmentName FROM Alignment").fetchall()}
+    item_types   = {r["TypeName"]:       r["ItemTypeID"]   for r in conn.execute("SELECT ItemTypeID, TypeName FROM ItemType").fetchall()}
+    rarities     = {r["RarityName"]:     r["RarityID"]     for r in conn.execute("SELECT RarityID, RarityName FROM Rarity").fetchall()}
+    regions      = {r["RegionName"]:     r["RegionID"]     for r in conn.execute("SELECT RegionID, RegionName FROM Region").fetchall()}
+    difficulties = {r["DifficultyName"]: r["DifficultyID"] for r in conn.execute("SELECT DifficultyID, DifficultyName FROM Difficulty").fetchall()}
+
+    # - Characters -
+    if conn.execute("SELECT COUNT(*) FROM Character").fetchone()[0] == 0:
+        character_rows = [
+            ("Thorin Ironblade", classes["Warrior"], species["Dwarf"],    alignments["Lawful Good"],    12),
+            ("Aelindra Swift",   classes["Ranger"],  species["Elf"],      alignments["Chaotic Good"],    7),
+            ("Grommash",         classes["Warrior"], species["Orc"],      alignments["Chaotic Neutral"], 5),
+            ("Seraphina Vale",   classes["Paladin"], species["Human"],    alignments["Lawful Good"],     9),
+            ("Zyx Shadowmeld",   classes["Rogue"],   species["Halfling"], alignments["True Neutral"],    3),
+        ]
+        conn.executemany(
+            "INSERT INTO Character (CharacterName, ClassID, SpeciesID, AlignmentID, Level) VALUES (?, ?, ?, ?, ?)",
+            character_rows
+        )
         conn.commit()
+        print("  \u2713 Seeded Character")
+    else:
+        print("  \u23ed Skipped Character (already has data)")
+
+    char_map = {r["CharacterName"]: r["CharacterID"] for r in conn.execute("SELECT CharacterID, CharacterName FROM Character").fetchall()}
+
+    # - Items -
+    if conn.execute("SELECT COUNT(*) FROM Item").fetchone()[0] == 0:
+        item_rows = [
+            ("Iron Sword",        item_types["Weapon"],    rarities["Common"]),
+            ("Leather Armour",    item_types["Armour"],    rarities["Common"]),
+            ("Healing Potion",    item_types["Potion"],    rarities["Uncommon"]),
+            ("Elven Longbow",     item_types["Weapon"],    rarities["Rare"]),
+            ("Ring of Swiftness", item_types["Accessory"], rarities["Epic"]),
+            ("Shadowblade",       item_types["Weapon"],    rarities["Legendary"]),
+        ]
+        conn.executemany(
+            "INSERT INTO Item (ItemName, ItemTypeID, RarityID) VALUES (?, ?, ?)",
+            item_rows
+        )
+        conn.commit()
+        print("  \u2713 Seeded Item")
+    else:
+        print("  \u23ed Skipped Item (already has data)")
+
+    item_map = {r["ItemName"]: r["ItemID"] for r in conn.execute("SELECT ItemID, ItemName FROM Item").fetchall()}
+
+    # - Quests -
+    if conn.execute("SELECT COUNT(*) FROM Quest").fetchone()[0] == 0:
+        quest_rows = [
+            ("Defend the Vale",       regions["The Verdant Vale"],    difficulties["Journeyman"]),
+            ("The Marsh Wraith",      regions["Shadowfen Marshes"],   difficulties["Adept"]),
+            ("Summit of Ironpeak",    regions["Ironpeak Mountains"],  difficulties["Expert"]),
+            ("Embers of the Wastes",  regions["The Ashen Wastes"],    difficulties["Novice"]),
+            ("The Crystal Labyrinth", regions["Crystalspire Forest"], difficulties["Legendary"]),
+        ]
+        conn.executemany(
+            "INSERT INTO Quest (QuestName, RegionID, DifficultyID) VALUES (?, ?, ?)",
+            quest_rows
+        )
+        conn.commit()
+        print(" Seeded Quest")
+    else:
+        print(" Skipped Quest (already has data)")
+
+    quest_map = {r["QuestName"]: r["QuestID"] for r in conn.execute("SELECT QuestID, QuestName FROM Quest").fetchall()}
+
+    # -— Inventory -
+    if conn.execute("SELECT COUNT(*) FROM Inventory").fetchone()[0] == 0:
+        inventory_rows = [
+            (char_map["Thorin Ironblade"], item_map["Iron Sword"],        1),
+            (char_map["Thorin Ironblade"], item_map["Healing Potion"],    3),
+            (char_map["Aelindra Swift"], item_map["Elven Longbow"],     1),
+            (char_map["Aelindra Swift"], item_map["Ring of Swiftness"], 1),
+            (char_map["Grommash"],  item_map["Leather Armour"],    1),
+            (char_map["Zyx Shadowmeld"], item_map["Shadowblade"],       1),
+        ]
+        conn.executemany(
+            "INSERT INTO Inventory (CharacterID, ItemID, Quantity) VALUES (?, ?, ?)",
+            inventory_rows
+        )
+        conn.commit()
+        print("  Seeded Inventory")
+    else:
+        print(" Skipped Inventory (already has data)")
+
+    # - CharacterQuest -
+    if conn.execute("SELECT COUNT(*) FROM CharacterQuest").fetchone()[0] == 0:
+        cq_rows = [
+            (char_map["Thorin Ironblade"], quest_map["Defend the Vale"], datetime(2026, 1, 12, 14, 30)),
+            (char_map["Aelindra Swift"], quest_map["The Marsh Wraith"],  datetime(2026, 2,  3, 10,  0)),
+            (char_map["Seraphina Vale"], quest_map["Summit of Ironpeak"], None),
+            (char_map["Grommash"], quest_map["Embers of the Wastes"], datetime(2026, 3,  7,  9, 15)),
+            (char_map["Zyx Shadowmeld"], quest_map["The Crystal Labyrinth"], None),
+        ]
+        conn.executemany(
+            "INSERT INTO CharacterQuest (CharacterID, QuestID, CompletionDate) VALUES (?, ?, ?)",
+            cq_rows
+        )
+        conn.commit()
+        print(" Seeded CharacterQuest")
+    else:
+        print(" Skipped CharacterQuest (already has data)")
+
+
+def seed():
+    init_db()
+    with get_db() as conn:
+        seed_lookup_tables(conn)
+        seed_core_data(conn)
+    print("\nSeed complete.")
+
+
+if __name__ == "__main__":
+    seed()

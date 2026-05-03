@@ -1,18 +1,18 @@
-/* ── Reset & Variables ───────────────────────────────────────────────────── */
+/* --- Reset & Variables --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg:         #0f1117;
-    --surface:    #1a1d2e;
-    --surface2:   #252840;
-    --border:     #2e3250;
-    --primary:    #7c6af7;
-    --primary-h:  #9b8cff;
+    --bg:         #ebebeb;
+    --surface:    #cfcfcf;
+    --surface2:   #cfcfcf;
+    --border:     #7d7d7d;
+    --primary:    #3280fc;
+    --primary-h:  #3280fc;
     --success:    #3ecf8e;
     --warning:    #f5a623;
     --danger:     #e05252;
-    --text:       #e4e6f0;
-    --text-muted: #7a7f9a;
+    --text:       #292929;
+    --text-muted: #404040;
     --radius:     8px;
     --shadow:     0 4px 20px rgba(0,0,0,0.4);
 }
@@ -26,7 +26,7 @@ body {
     flex-direction: column;
 }
 
-/* ── Navbar ──────────────────────────────────────────────────────────────── */
+/* --- Navbar --- */
 .navbar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -68,7 +68,7 @@ body {
     background: var(--surface2);
 }
 
-/* ── Container ───────────────────────────────────────────────────────────── */
+/* --- Container --- */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -76,7 +76,7 @@ body {
     flex: 1;
 }
 
-/* ── Page Header ─────────────────────────────────────────────────────────── */
+/* --- Page Header --- */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -93,7 +93,7 @@ body {
     margin-top: 0.25rem;
 }
 
-/* ── Alerts ──────────────────────────────────────────────────────────────── */
+/* --- Alerts --- */
 .alert {
     padding: 0.75rem 1rem;
     border-radius: var(--radius);
@@ -104,7 +104,7 @@ body {
 .alert-warning { background: rgba(245,166,35,0.15);  border: 1px solid var(--warning); color: var(--warning); }
 .alert-danger  { background: rgba(224,82,82,0.15);   border: 1px solid var(--danger);  color: var(--danger);  }
 
-/* ── Buttons ─────────────────────────────────────────────────────────────── */
+/* --- Buttons --- */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -128,7 +128,7 @@ body {
 .btn-danger    { background: var(--danger);   color: #fff; }
 .btn-sm        { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 
-/* ── Dashboard Stats ─────────────────────────────────────────────────────── */
+/* --- Dashboard Stats --- */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -172,7 +172,7 @@ body {
 .action-card:hover { border-color: var(--primary); background: var(--surface2); }
 .action-icon { font-size: 1.2rem; }
 
-/* ── Tables ──────────────────────────────────────────────────────────────── */
+/* --- Tables --- */
 .table-wrapper {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -207,7 +207,7 @@ body {
 .data-table .actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .row-complete td { opacity: 0.6; }
 
-/* ── Badges ──────────────────────────────────────────────────────────────── */
+/* --- Badges --- */
 .badge {
     display: inline-block;
     padding: 0.2rem 0.6rem;
@@ -238,7 +238,7 @@ body {
     font-weight: 700;
 }
 
-/* ── Forms ───────────────────────────────────────────────────────────────── */
+/* --- Forms --- */
 .form-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -289,7 +289,7 @@ select.form-control option { background: var(--surface2); }
     margin-top: 1.5rem;
 }
 
-/* ── Two column layout ───────────────────────────────────────────────────── */
+/* --- Two column layout --- */
 .two-col {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -305,7 +305,7 @@ select.form-control option { background: var(--surface2); }
 
 .two-col .form-card { max-width: 100%; }
 
-/* ── Empty state ─────────────────────────────────────────────────────────── */
+/* --- Empty state --- */
 .empty-state {
     text-align: center;
     padding: 3rem;
@@ -316,7 +316,7 @@ select.form-control option { background: var(--surface2); }
 }
 .empty-state p { margin-bottom: 1rem; font-size: 1.1rem; }
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
+/* --- Footer --- */
 footer {
     text-align: center;
     padding: 1.25rem;
@@ -325,7 +325,7 @@ footer {
     border-top: 1px solid var(--border);
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* --- Responsive --- */
 @media (max-width: 768px) {
     .two-col      { grid-template-columns: 1fr; }
     .form-row     { grid-template-columns: 1fr; }

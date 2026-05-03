@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS Quest (
     FOREIGN KEY (DifficultyID) REFERENCES Difficulty(DifficultyID)
 );
 
--- — Join tables ——————————————————————————————————————————————————————————
+-- — Join tables -------------------------------
 
 CREATE TABLE IF NOT EXISTS Inventory (
     InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
