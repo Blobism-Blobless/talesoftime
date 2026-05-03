@@ -1,7 +1,4 @@
 """
-seed.py - Populates Tales of Time database with lookup and sample transactional data.
-Run after database creation: python database/seed.py
-
 seed.py - This fills the tales of time database with lookup and sample transactional data.
 ----------------
 Run after database creation: python database/seed.py
@@ -84,9 +81,9 @@ def seed_lookup_tables(conn):
                     f"INSERT INTO {table} ({cols}) VALUES ({placeholders})",
                     list(row.values())
                 )
-            print(f"  \u2713 Seeded {table}")
+            print(f" Seeded {table}")
         else:
-            print(f"  \u23ed Skipped {table} (already has data)")
+            print(f" Skipped {table} (already has data)")
     conn.commit()
 
 
@@ -114,9 +111,9 @@ def seed_core_data(conn):
             character_rows
         )
         conn.commit()
-        print("  \u2713 Seeded Character")
+        print(" Seeded Character")
     else:
-        print("  \u23ed Skipped Character (already has data)")
+        print(" Skipped Character (already has data)")
 
     char_map = {r["CharacterName"]: r["CharacterID"] for r in conn.execute("SELECT CharacterID, CharacterName FROM Character").fetchall()}
 
@@ -135,9 +132,9 @@ def seed_core_data(conn):
             item_rows
         )
         conn.commit()
-        print("  \u2713 Seeded Item")
+        print(" seeded Item")
     else:
-        print("  \u23ed Skipped Item (already has data)")
+        print(" Skipped Item (already has data)")
 
     item_map = {r["ItemName"]: r["ItemID"] for r in conn.execute("SELECT ItemID, ItemName FROM Item").fetchall()}
 

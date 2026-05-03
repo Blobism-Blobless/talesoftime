@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 
-# ── Character ──────────────────────────────────────────────────────────────────
+# --- Character ---
 
 @dataclass
 class CharacterViewModel:
@@ -53,7 +53,7 @@ class CharacterFormViewModel:
     character:  Optional[object] = None   # None = create mode, Row = edit mode
 
 
-# ── Item ───────────────────────────────────────────────────────────────────────
+# --- Item ---
 
 @dataclass
 class ItemViewModel:
@@ -89,7 +89,7 @@ class ItemFormViewModel:
     rarities:   list = field(default_factory=list)
 
 
-# ── Quest ──────────────────────────────────────────────────────────────────────
+# --- Quest ---
 
 @dataclass
 class QuestViewModel:
@@ -125,7 +125,7 @@ class QuestFormViewModel:
     difficulties: list = field(default_factory=list)
 
 
-# ── Inventory ──────────────────────────────────────────────────────────────────
+# --- Inventory ---
 
 @dataclass
 class InventoryEntryViewModel:
@@ -146,7 +146,7 @@ class InventoryEntryViewModel:
         )
 
 
-# ── CharacterQuest ─────────────────────────────────────────────────────────────
+# --- CharacterQuest ---
 
 @dataclass
 class CharacterQuestViewModel:
@@ -171,7 +171,7 @@ class CharacterQuestViewModel:
         )
 
 
-# ── Dashboard ──────────────────────────────────────────────────────────────────
+# --- Dashboard ---
 
 @dataclass
 class DashboardViewModel:

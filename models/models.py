@@ -10,7 +10,7 @@ Replaces SQLAlchemy ORM entirely. Responsibilities:
 import sqlite3
 import os
 
-# — Connection ————————————————————————————————————————————————————————————
+# --- Connection ---
 
 _HERE   = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.normpath(os.environ.get("DATABASE_PATH", os.path.join(_HERE, "..", "instance", "tales_of_time.db")))
@@ -33,14 +33,14 @@ def get_db() -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
-# — Schema DDL ————————————————————————————————————————————————————————————
+# --- Schema DDL ---
 
 # Each CREATE TABLE statement mirrors the specification exactly.
 # IF NOT EXISTS means this is safe to call on every app start.
 
 _SCHEMA = """
 
--- — Lookup / Reference tables ————————————————————————————————————————————
+-- — Lookup / Reference tables ---
 
 CREATE TABLE IF NOT EXISTS CharacterClass (
     ClassID     INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS Difficulty (
     DifficultyName VARCHAR(50) NOT NULL UNIQUE
 );
 
--- — Core entities ————————————————————————————————————————————————————————
+-- — Core entities ---
 
 CREATE TABLE IF NOT EXISTS Character (
     CharacterID   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS Quest (
     FOREIGN KEY (DifficultyID) REFERENCES Difficulty(DifficultyID)
 );
 
--- — Join tables -------------------------------
+-- — Join tables ---
 
 CREATE TABLE IF NOT EXISTS Inventory (
     InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
