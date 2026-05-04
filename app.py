@@ -22,7 +22,7 @@ def create_app(config_overrides: dict = None) -> Flask:
     if config_overrides:
         app.config.update(config_overrides)
 
-    # Initialise the database schema (safe to re-run - uses IF NOT EXISTS)
+    #Initialise the database schema (safe to re-run - uses IF NOT EXISTS)
     init_db()
 
     from views.views import bp
